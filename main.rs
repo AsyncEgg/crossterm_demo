@@ -31,8 +31,10 @@ fn main() -> Result<()> {
         }
       }
     }
-    
-    
+    //replace old trail with clear path
+    stdout
+      .queue(cursor::MoveTo(x_old-1,y_old-1))?
+      .queue(style::PrintStyledContent( " ".magenta()))?;
     
     if y_pos >= y_len-1{
       bottom_hit = true;
@@ -61,6 +63,7 @@ fn main() -> Result<()> {
     x_old = x_pos;
     y_old = y_pos;
 
+      
     stdout
       .queue(cursor::MoveTo(x_pos-1,y_pos-1))?
       .queue(style::PrintStyledContent("@".dark_green()))?;  
@@ -68,7 +71,6 @@ fn main() -> Result<()> {
     stdout.flush()?;
     
     thread::sleep(time::Duration::from_millis(25));  
-    stdout.execute(terminal::Clear(terminal::ClearType::All))?;
   }
   Ok(())
 }
