@@ -1,76 +1,87 @@
-use std::{io::{stdout, Write}, thread, time};
+use std::{io::{stdout, Write,Stdout}, thread, time};
 use crossterm::{
     ExecutableCommand, QueueableCommand,
     terminal, cursor, style::{self, Stylize}, Result
 };
 
+struct Point {
+    x: u16,
+    y: u16,
+}
+
 fn main() -> Result<()> {
-  let mut stdout = stdout();
-  stdout.execute(terminal::Clear(terminal::ClearType::All))?;
-  stdout.execute(cursor::Hide)?;
-  let x_len = 50;
-  let y_len = 25;
-
-  let mut bottom_hit = true;
-  let mut right_hit = false;
-
-  let mut y_pos = 10;
-  let mut x_pos = 3;
-
-  let mut x_old: u16 =1;
-  let mut y_old: u16 =1;
-
-  loop {
-    for y in 0..y_len {
-      for x in 0..x_len{
-        if (y == 0 || y == y_len - 1) || (x == 0 || x == x_len - 1) {
-
-          stdout
-            .queue(cursor::MoveTo(x,y))?
-            .queue(style::PrintStyledContent( "#".magenta()))?;
+    //Console size
+    let CSL_SIZE_X = 50;
+    let CSL_SIZE_Y = 25;
+    
+    //make sure this isnt 0,0 or you will get an overflow
+    let mut ball = Point{x:10, y:10};
+    let mut old_ball_pos = Point{x:10, y:10};
+    
+    let mut move_ball_up = false;
+    let mut move_ball_left = true;
+    
+    let mut stdout = stdout();
+    
+    stdout.execute(terminal::Clear(terminal::ClearType::All))?;
+    stdout.execute(cursor::Hide)?;
+    
+    loop {
+      for y in 0..CSL_SIZE_Y {
+        for x in 0..CSL_SIZE_X{
+          if (y == 0 || y == CSL_SIZE_Y - 1) || (x == 0 || x == CSL_SIZE_X - 1) {
+  
+            stdout
+              .queue(cursor::MoveTo(x,y))?
+              .queue(style::PrintStyledContent( "#".magenta()))?;
+          }
         }
       }
-    }
-    //replace old trail with clear path
-    stdout
-      .queue(cursor::MoveTo(x_old-1,y_old-1))?
-      .queue(style::PrintStyledContent( " ".magenta()))?;
-    
-    if y_pos >= y_len-1{
-      bottom_hit = true;
-    } else if y_pos <= 1 {
-      bottom_hit = false;
-    }
-
-    if x_pos <= 1 {
-      right_hit = true;
-    } else if x_pos >= x_len-1 {
-      right_hit = false;
-    }
-
-    if bottom_hit {
-      y_pos -= 1
-    } else {
-      y_pos += 1
-    }
-
-    if right_hit {
-      x_pos += 1
-    } else {
-      x_pos -= 1
-    }
-    
-    x_old = x_pos;
-    y_old = y_pos;
-
+      //clear previous ball pos
+      stdout
+        .queue(cursor::MoveTo(old_ball_pos.x-1,old_ball_pos.y-1))?
+        .queue(style::PrintStyledContent( " ".magenta()))?;
       
-    stdout
-      .queue(cursor::MoveTo(x_pos-1,y_pos-1))?
-      .queue(style::PrintStyledContent("@".dark_green()))?;  
+      //TODO refactor this into a function
+      if ball.y >= CSL_SIZE_Y-1{
+        move_ball_up = true;
+      } else if ball.y <= 2 {
+        move_ball_up = false;
+      }
+  
+      if ball.x <= 2 {
+        move_ball_left = true;
+      } else if ball.x >= CSL_SIZE_X-1 {
+        move_ball_left = false;
+      }
+  
+      if move_ball_up {
+        ball.y -= 1
+      } else {
+        ball.y += 1
+      }
+  
+      if move_ball_left {
+        ball.x += 1
+      } else {
+        ball.x -= 1
+      }
+      
+      old_ball_pos.x = ball.x;
+      old_ball_pos.y = ball.y;
+  
+      stdout
+        .queue(cursor::MoveTo(ball.x-1,ball.y-1))?
+        .queue(style::PrintStyledContent("@".dark_green()))?;  
+      
+      stdout.flush()?;
+      thread::sleep(time::Duration::from_millis(25));
 
-    stdout.flush()?;
-    
-    thread::sleep(time::Duration::from_millis(25));  
-  }
-  Ok(())
+      //just to remove warning will fix later
+      //TODO add better break case.
+        if ball.x == 100 && ball.y == 100{
+          break
+        }
+      }
+    Ok(())
 }
