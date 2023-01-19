@@ -10,11 +10,9 @@ struct Point {
 }
 
 fn main() -> Result<()> {
-    //Console size
     let CSL_SIZE_X = 50;
     let CSL_SIZE_Y = 25;
-    
-    //make sure this isnt 0,0 or you will get an overflow
+
     let mut ball = Point{x:10, y:10};
     let mut old_ball_pos = Point{x:10, y:10};
     
@@ -25,7 +23,7 @@ fn main() -> Result<()> {
     
     stdout.execute(terminal::Clear(terminal::ClearType::All))?;
     stdout.execute(cursor::Hide)?;
-    
+    //draws rectangle
     loop {
       for y in 0..CSL_SIZE_Y {
         for x in 0..CSL_SIZE_X{
@@ -40,32 +38,19 @@ fn main() -> Result<()> {
       //clear previous ball pos
       stdout
         .queue(cursor::MoveTo(old_ball_pos.x-1,old_ball_pos.y-1))?
-        .queue(style::PrintStyledContent( " ".magenta()))?;
+        .queue(style::Print(" "))?;
       
-      //TODO refactor this into a function
-      if ball.y >= CSL_SIZE_Y-1{
-        move_ball_up = true;
-      } else if ball.y <= 2 {
-        move_ball_up = false;
-      }
+      if ball.y >= CSL_SIZE_Y - 1 { move_ball_up = true;}
+        else if ball.y <= 2 { move_ball_up = false;}
   
-      if ball.x <= 2 {
-        move_ball_left = true;
-      } else if ball.x >= CSL_SIZE_X-1 {
-        move_ball_left = false;
-      }
+      if ball.x <= 2 { move_ball_left = true;} 
+        else if ball.x >= CSL_SIZE_X - 1 { move_ball_left = false;}
   
-      if move_ball_up {
-        ball.y -= 1
-      } else {
-        ball.y += 1
-      }
+      if move_ball_up { ball.y -= 1 }
+        else if !move_ball_up { ball.y += 1 }
   
-      if move_ball_left {
-        ball.x += 1
-      } else {
-        ball.x -= 1
-      }
+      if move_ball_left { ball.x += 1 }
+        else if !move_ball_left { ball.x -= 1 }
       
       old_ball_pos.x = ball.x;
       old_ball_pos.y = ball.y;
@@ -75,10 +60,9 @@ fn main() -> Result<()> {
         .queue(style::PrintStyledContent("@".dark_green()))?;  
       
       stdout.flush()?;
-      thread::sleep(time::Duration::from_millis(25));
+      //thread::sleep(time::Duration::from_millis(10));
 
       //just to remove warning will fix later
-      //TODO add better break case.
         if ball.x == 100 && ball.y == 100{
           break
         }
